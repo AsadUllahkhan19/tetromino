@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PixiJS Tetromino Puzzle</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/7.3.3/pixi.min.js"></script>
+</head>
+
+<body>
+  <script>
+    // Create PixiJS Application
+    const app = new PIXI.Application({
+      width: 400,
+      height: 600,
+      backgroundColor: 0xAAAAAA,
+    });
+
+    document.body.appendChild(app.view);
+
+    // Define Tetromino shapes
+    const tetrominoShapes = [
+      [[1, 1, 1, 1]],
+      [[1, 1, 1], [1]],
+      [[1, 1, 1], [0, 0, 1]],
+      [[1, 1, 1], [0, 1]],
+    ];
+
+    // Function to create a random Tetromino
+    function createRandomTetromino() {
+      const randomIndex = Math.floor(Math.random() * tetrominoShapes.length);
+      return tetrominoShapes[randomIndex];
+    }
+
+    // Function to draw a Tetromino
+    function drawTetromino(shape, x, y) {
+      const color = 0x00FF00; // Green color
+
+      for (let i = 0; i < shape.length; i++) {
+        for (let j = 0; j < shape[i].length; j++) {
+          if (shape[i][j] === 1) {
+            const block = new PIXI.Graphics();
+            block.beginFill(color);
+            block.drawRect(j * 50, i * 50, 50, 50);
+            block.endFill();
+            block.x = x * 50;
+            block.y = y * 50;
+            app.stage.addChild(block);
+          }
+        }
+      }
+    }
+
+    // Create and draw a random Tetromino
+    const tetromino = createRandomTetromino();
+    drawTetromino(tetromino, 2, 2);
+  </script>
+</body>
+
+</html>

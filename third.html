@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PixiJS Tetromino Puzzle</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/7.3.3/pixi.min.js"></script>
+</head>
+
+<body>
+    <script>
+        const app = new PIXI.Application({
+            width: 400,
+            height: 600,
+            backgroundColor: 0xAAAAAA,
+        });
+
+        document.body.appendChild(app.view);
+
+        const gridSize = { rows: 12, cols: 8 };
+        const cellSize = 50;
+
+        const tetrominoShapes = [
+            [[1, 1, 1, 1]],
+            [[1, 1, 1], [1]],
+            [[1, 1, 1], [0, 0, 1]],
+            [[1, 1, 1], [0, 1]],
+        ];
+
+        let currentTetromino;
+        let tetrominoPosition = { x: 2, y: 0 };
+
+        function createRandomTetromino() {
+            const randomIndex = Math.floor(Math.random() * tetrominoShapes.length);
+            return tetrominoShapes[randomIndex];
+        }
+
+        function drawTetromino(shape, x, y) {
+            const color = 0x00FF00;
+
+            for (let i = 0; i < shape.length; i++) {
+                for (let j = 0; j < shape[i].length; j++) {
+                    if (shape[i][j] === 1) {
+                        const block = new PIXI.Graphics();
+                        block.beginFill(color);
+                        block.drawRect(x * cellSize + j * cellSize, y * cellSize + i * cellSize, cellSize, cellSize);
+                        block.endFill();
+                        app.stage.addChild(block);
+                    }
+                }
+            }
+        }
+
+        function clearTetromino() {
+            app.stage.removeChildren();
+            drawGrid();
+        }
+
+        function moveTetromino(dx, dy) {
+            tetrominoPosition.x += dx;
+            tetrominoPosition.y += dy;
+
+            if (checkCollision()) {
+                tetrominoPosition.x -= dx;
+                tetrominoPosition.y -= dy;
+            }
+
+            clearTetromino();
+            drawTetromino(currentTetromino, tetrominoPosition.x, tetrominoPosition.y);
+        }
+
+        function rotateTetromino() {
+            const rotatedTetromino = rotateMatrix(currentTetromino);
+            if (!checkCollision(rotatedTetromino)) {
+                clearTetromino();
+                currentTetromino = rotatedTetromino;
+                drawTetromino(currentTetromino, tetrominoPosition.x, tetrominoPosition.y);
+            }
+        }
+
+        function rotateMatrix(matrix) {
+            const rows = matrix.length;
+            const cols = matrix[0].length;
+            const result = new Array(cols).fill(null).map(() => new Array(rows).fill(0));
+
+            for (let i = 0; i < rows; i++) {
+                for (let j = 0; j < cols; j++) {
+                    result[j][rows - 1 - i] = matrix[i][j];
+                }
+            }
+
+            return result;
+        }
+
+        function checkCollision(newTetromino = currentTetromino) {
+            for (let i = 0; i < newTetromino.length; i++) {
+                for (let j = 0; j < newTetromino[i].length; j++) {
+                    if (
+                        newTetromino[i][j] === 1 &&
+                        (tetrominoPosition.x + j < 0 ||
+                            tetrominoPosition.x + j >= gridSize.cols ||
+                            tetrominoPosition.y + i >= gridSize.rows ||
+                            tetrominoPosition.y + i < 0)
+                    ) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        function drawGrid() {
+            const gridGraphics = new PIXI.Graphics();
+            gridGraphics.lineStyle(1, 0x000000, 0.5);
+
+            for (let i = 0; i <= gridSize.cols; i++) {
+                gridGraphics.moveTo(i * cellSize, 0);
+                gridGraphics.lineTo(i * cellSize, gridSize.rows * cellSize);
+            }
+
+            for (let i = 0; i <= gridSize.rows; i++) {
+                gridGraphics.moveTo(0, i * cellSize);
+                gridGraphics.lineTo(gridSize.cols * cellSize, i * cellSize);
+            }
+
+            app.stage.addChild(gridGraphics);
+        }
+
+        document.addEventListener('keydown', (e) => {
+            switch (e.key) {
+                case 'ArrowLeft':
+                    moveTetromino(-1, 0);
+                    break;
+                case 'ArrowRight':
+                    moveTetromino(1, 0);
+                    break;
+                case 'ArrowDown':
+                    moveTetromino(0, 1);
+                    break;
+                case 'ArrowUp':
+                    rotateTetromino();
+                    break;
+            }
+        });
+
+        function initializeGame() {
+            currentTetromino = createRandomTetromino();
+            drawGrid();
+            drawTetromino(currentTetromino, tetrominoPosition.x, tetrominoPosition.y);
+        }
+
+        initializeGame();
+    </script>
+</body>
+
+</html>
